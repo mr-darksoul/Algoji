@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "554480069208",
+    "firebase_url": "https://algoji-b58a6.firebaseio.com",
+    "project_id": "algoji-b58a6",
+    "storage_bucket": "algoji-b58a6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:554480069208:android:9eb342c16d1ef4cdfff82d",
+        "android_client_info": {
+          "package_name": "com.example.algoji"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "554480069208-rqb9lghtosa54r55a66j7fjn9is0d6r5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.algoji",
+            "certificate_hash": "2655c9aab0bdccade92e6ddd957be8c2b79bbf4d"
+          }
+        },
+        {
+          "client_id": "554480069208-3sv3s4krkclc7j0annoegeq9hduv4461.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDnPlz4zNaeYIEBpXZJJqG48h71JnkhMQw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "554480069208-3sv3s4krkclc7j0annoegeq9hduv4461.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
