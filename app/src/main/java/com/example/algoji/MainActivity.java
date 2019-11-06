@@ -1,7 +1,10 @@
 package com.example.algoji;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputFilter;
@@ -19,10 +22,12 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
+import com.github.dhaval2404.imagepicker.util.FileUtil;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -37,7 +42,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -45,7 +49,8 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "MAIN_ACTIVITY";
     private static final int RC_SIGN_IN = 123;
-    private  static final int RC_FILE_PICKER = 2;
+    private static final int PICK_IMAGE_GALLERY_REQUEST_CODE = 69;
+    private static final int RC_FILE_PICKER = 2;
     public static final int DEFAULT_MSG_LENGTH_LIMIT = 1000;
     private String mUsername;
     // Firebase instance variables
@@ -83,10 +88,10 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize references to views
         mProgressBar = findViewById(R.id.progressBar);
-        mMessageListView =  findViewById(R.id.messageListView);
+        mMessageListView = findViewById(R.id.messageListView);
         mPhotoPickerButton = findViewById(R.id.photoPickerButton);
-        mMessageEditText =  findViewById(R.id.messageEditText);
-        mSendButton =  findViewById(R.id.sendButton);
+        mMessageEditText = findViewById(R.id.messageEditText);
+        mSendButton = findViewById(R.id.sendButton);
 
         // Initialize message ListView and its adapter
         List<UserMessage> userMessageList = new ArrayList<>();
@@ -119,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
 
         //Enable Email link sign in in FirebaseUI
         final ActionCodeSettings actionCodeSettings = ActionCodeSettings.newBuilder()
-                .setAndroidPackageName(getPackageName(),true,null)
+                .setAndroidPackageName(getPackageName(), true, null)
                 .setHandleCodeInApp(true) // This must be set to true
                 .setUrl("https://google.com") // This URL needs to be whitelisted
                 .build();
@@ -151,8 +156,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
-
-
 
 
         mMessageEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(DEFAULT_MSG_LENGTH_LIMIT)});
@@ -213,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
                                 public void onSuccess(Uri uri) {
                                     // Set the download URL to the message box, so that the user can send it to the database
                                     UserMessage friendlyMessage = new UserMessage(null, mUsername, uri.toString());
-                                    mMessageEditText.setText("Check this file "+uri.toString());
+                                    mMessageEditText.setText("Check this file " + uri.toString());
                                     mMessagesDatabaseReference.push().setValue(friendlyMessage);
                                 }
                             });
@@ -224,6 +227,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
     private void onSignedInInitialize(String username) {
         mUsername = username;
         attachDatabaseReadListener();
@@ -234,6 +238,7 @@ public class MainActivity extends AppCompatActivity {
         mMessageAdapter.clear();
         detachDatabaseReadListener();
     }
+
     private void attachDatabaseReadListener() {
         if (mChildEventListener == null) {
             mChildEventListener = new ChildEventListener() {
@@ -243,10 +248,17 @@ public class MainActivity extends AppCompatActivity {
                     mMessageAdapter.add(friendlyMessage);
                 }
 
-                public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
-                public void onChildRemoved(DataSnapshot dataSnapshot) {}
-                public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
-                public void onCancelled(DatabaseError databaseError) {}
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                }
+
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+                }
+
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                }
+
+                public void onCancelled(DatabaseError databaseError) {
+                }
             };
             mMessagesDatabaseReference.addChildEventListener(mChildEventListener);
         }
@@ -268,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId() == R.id.sign_out_menu){
+        if (item.getItemId() == R.id.sign_out_menu) {
             // [START auth_fui_signout]
             AuthUI.getInstance()
                     .signOut(this)
@@ -278,10 +290,16 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
             // [END auth_fui_signout]
+        } else if(item.getItemId() == R.id.profile_menu){
+
+            Intent i = new Intent(this, ProfileActivity.class);
+            startActivity(i);
+
         }
         return super.onOptionsItemSelected(item);
 
     }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -297,5 +315,7 @@ public class MainActivity extends AppCompatActivity {
         mMessageAdapter.clear();
         detachDatabaseReadListener();
     }
+
+
 
 }

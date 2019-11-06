@@ -3,4 +3,10 @@
     <string name="sign_out">Sign Out</string>
     <string name="profile_photo">Set Profile</string>
     <string name="send_button_label">Send</string>
+    <string name="select_picture">Select Picture</string>
+    <string name="internal_storage">Internal Storage</string>
+    <string-array name="imagePicker">
+        <item>From Gallery</item>
+        <item>From Camera</item>
+    </string-array>
 </resources>
