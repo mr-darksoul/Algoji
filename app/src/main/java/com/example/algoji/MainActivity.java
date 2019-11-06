@@ -29,6 +29,7 @@ import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
 import com.github.dhaval2404.imagepicker.util.FileUtil;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.ActionCodeSettings;
@@ -39,23 +40,28 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
+    public static final int DEFAULT_MSG_LENGTH_LIMIT = 1000;
+    public static final String MSG_LENGTH_KEY = "msg_length";
     public static final String TAG = "MAIN_ACTIVITY";
     private static final int RC_SIGN_IN = 123;
     private static final int PICK_IMAGE_GALLERY_REQUEST_CODE = 69;
     private static final int RC_FILE_PICKER = 2;
-    public static final int DEFAULT_MSG_LENGTH_LIMIT = 1000;
     private String mUsername;
     // Firebase instance variables
     private FirebaseDatabase mFirebaseDatabase;
-    private DatabaseReference mMessagesDatabaseReference;
+    private DatabaseReference mMessagesDatabaseReference, mProfileImageDatabaseRefrence;
     private ChildEventListener mChildEventListener;
     private FirebaseAuth mFirebaseAuth;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
@@ -183,6 +189,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
     }
 
 
@@ -293,6 +300,7 @@ public class MainActivity extends AppCompatActivity {
         } else if(item.getItemId() == R.id.profile_menu){
 
             Intent i = new Intent(this, ProfileActivity.class);
+            i.putExtra("uid",user.getUid());
             startActivity(i);
 
         }

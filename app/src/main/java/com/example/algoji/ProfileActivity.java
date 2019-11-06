@@ -5,7 +5,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
-
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -15,25 +14,39 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.example.algoji.utils.FileUtils;
 import com.example.algoji.utils.UiHelper;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.yalantis.ucrop.UCrop;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 
 public class ProfileActivity extends AppCompatActivity implements IImagePickerLister {
 
+    private FirebaseStorage firebaseStorage;
+    private StorageReference storageReference;
     private static final int CAMERA_ACTION_PICK_REQUEST_CODE = 610;
     private static final int PICK_IMAGE_GALLERY_REQUEST_CODE = 609;
     public static final int CAMERA_STORAGE_REQUEST_CODE = 611;
     public static final int ONLY_CAMERA_REQUEST_CODE = 612;
     public static final int ONLY_STORAGE_REQUEST_CODE = 613;
-
+    private String uid;
     private String currentPhotoPath = "";
     private UiHelper uiHelper = new UiHelper();
     private ImageView imageView;
@@ -42,12 +55,41 @@ public class ProfileActivity extends AppCompatActivity implements IImagePickerLi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
+
+        if (savedInstanceState == null) {
+            Bundle extras = getIntent().getExtras();
+            if(extras == null) {
+                uid= null;
+            } else {
+                uid= extras.getString("uid");
+            }
+        } else {
+            uid= (String) savedInstanceState.getSerializable("uid");
+        }
+        firebaseStorage = FirebaseStorage.getInstance();
+        storageReference = firebaseStorage.getReference().child("profile-images").child(uid);
+
         findViewById(R.id.selectPictureButton).setOnClickListener(v -> {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
                 if (uiHelper.checkSelfPermissions(this))
                     uiHelper.showImagePickerDialog(this, this);
         });
         imageView = findViewById(R.id.imageView);
+
+        final long ONE_MEGABYTE = 1024 * 1024;
+        storageReference.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+            @Override
+            public void onSuccess(byte[] bytes) {
+                // Data for "images/island.jpg" is returns, use this as needed
+                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                imageView.setImageBitmap(bitmap);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle any errors
+            }
+        });
 
     }
 
@@ -129,6 +171,7 @@ public class ProfileActivity extends AppCompatActivity implements IImagePickerLi
             InputStream inputStream = new FileInputStream(file);
             Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
             imageView.setImageBitmap(bitmap);
+            uploadProfileImage(bitmap);
         } catch (Exception e) {
             uiHelper.toast(this, "Please select different profile picture.");
         }
@@ -188,5 +231,36 @@ public class ProfileActivity extends AppCompatActivity implements IImagePickerLi
                 .withMaxResultSize(100, 100)
                 .withAspectRatio(5f, 5f)
                 .start(this);
+    }
+
+    private void uploadProfileImage(Bitmap bitmap){
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] data = baos.toByteArray();
+
+        UploadTask uploadTask = storageReference.putBytes(data);
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle unsuccessful uploads
+
+                Log.d("uploadProfileImage", "onFailure: " + exception.toString());
+            }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+                // Do what you want
+                Task<Uri> task = taskSnapshot.getMetadata().getReference().getDownloadUrl();
+                task.addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        //Perform Later Tasks.
+                    }
+                });
+
+            }
+        });
+
     }
 }
